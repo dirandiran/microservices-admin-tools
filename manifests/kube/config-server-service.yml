@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-server
+  labels:
+    app: config-server
+spec:
+  selector:
+    matchLabels:
+      app:  config-server
+  replicas: 2
+  minReadySeconds: 15
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: config-server
+        version: v1
+    spec:
+      containers:
+        - image: dirandiran/config-server-app:1.0.0
+          imagePullPolicy: Always
+          name: config-server
+#          env:
+#            - name: JAEGER_SERVICE_NAME
+#              value: config-server
+#            - name: JAEGER_AGENT_HOST
+#              value: jaeger-agent.istio-system.svc.cluster.local
+#            - name: JAEGER_REPORTER_LOG_SPANS
+#              value: "true"
+#            - name: JAEGER_SAMPLER_TYPE
+#              value: const
+#            - name: JAEGER_SAMPLER_PARAM
+#              value: "1"
+#            - name: JAEGER_PROPAGATION
+#              value: b3
+          ports:
+            - containerPort: 8888
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-server
+#  labels:
+#    run: config-server
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8888
+  selector:
+    app: config-server
